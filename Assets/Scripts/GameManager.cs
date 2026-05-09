@@ -53,7 +53,7 @@ public class GameManager : MonoBehaviour
         if (level > 3)
         {
             if (storyText != null)
-                storyText.text = "Метиоритный дождь завершен!\nВам удалось переждать!";
+                storyText.text = "Метеоритный дождь завершен!\nВам удалось переждать!";
 
             Time.timeScale = 0f;
             return;
