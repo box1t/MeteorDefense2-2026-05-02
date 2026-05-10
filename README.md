@@ -15,12 +15,15 @@
 Метеориты появляются волнами с разными паттернами движения и постепенно увеличивают сложность игры.
 
 ## Видеодемонстрация
-Ссылка на геймплей: [https://drive.google.com/file/d/13PkxvGt97e4IH4SK5rh_m7YlXnKkPE5-/view?usp=sharing](https://drive.google.com/file/d/1aSkZh7dEvO_MLdQo4rRfJksoAtcWfMZC/view?usp=sharing)
+[Ссылка на геймплей](https://drive.google.com/file/d/1sa3inY0uyd7gCAMYsT2z9CiLwTrwtR37/view?usp=sharing)
 
-<img width="1914" height="736" alt="image" src="https://github.com/user-attachments/assets/67a372c8-b3eb-4a51-a4ea-cf56ccc75e01" />
+![drone-wave](screens/drone-wave.png)
 
+![main-menu](screens/main-menu.png)
 
+![shoot-lightning.png](screens/shoot-lightning.png)
 ---
+# MeteorDefense2 — Gameplay Systems README
 
 ## ⚙️ Реализованные механики
 
@@ -35,7 +38,9 @@
 * 🔫 **Система стрельбы**:
 
   * стрельба по направлению камеры
-  * Raycast + расширенная зона попадания
+  * homing projectile system
+  * projectile targeting
+  * FirePoint spawn system
 * 🎯 **Автоприцеливание (Aim Assist)**
 * 🔒 **Lock-on система** — захват ближайшей цели
 * 💥 **Уничтожение метеоров**:
@@ -45,150 +50,547 @@
 * 📊 **Счётчик уничтоженных метеоров**
 * 🧠 **Ограничение количества метеоров на сцене**
 * ⚡ **Кеширование компонентов** — оптимизация работы (снижение количества вызовов Find и GetComponent)
+* 🚀 **Particle Thrusters** — реактивное пламя из сопел корабля
+* 🛰 **Drone Support System**
+* ⚡ **EMP / Magnetic Pulse Ability**
+* 📉 **Cooldown System**
+* 🌌 **Space Skybox Animation**
+* 🎥 **Camera Shake**
+* ✨ **Floating UI Feedback**
+* ☄️ **Physics-based Meteors**
+* 🚪 **Portal Teleportation System**
+* ⚙️ **Optimization Systems**
+* 🔥 **Projectile VFX**
 
 ---
 
-## 🎮 Управление
+# 🎮 Управление
 
 | Действие        | Управление          |
 | --------------- | ------------------- |
 | Вращение камеры | ПКМ + движение мыши |
 | Стрельба        | ЛКМ                 |
+| EMP-волна дрона | V                   |
 | Зум камеры      | Колесо мыши         |
 
 ---
 
-## 🎯 Цель игры
+# 🎯 Цель игры
 
 Уничтожать как можно больше метеоритов, адаптируясь к увеличивающейся сложности и атакам с разных направлений.
 
 ---
 
-## 💡 Особенности
+# 💡 Особенности
 
 * Бой ведётся **в полном 3D пространстве**
 * Игрок может атаковать цели **с любой стороны**
 * Телепорты добавляют элемент непредсказуемости
 * Камера напрямую влияет на эффективность стрельбы
+* Projectile system автоматически корректирует траекторию
+* EMP drone помогает расчищать пространство при окружении
+* Волны постоянно меняют структуру атак
 
 ---
 
-## 🛠 Технологии
+# 🛠 Технологии
 
-* Unity (C#)
-* Rigidbody physics
+* Unity 6
+* C#
+* Rigidbody Physics
 * Raycast / SphereCast
-* TextMeshPro UI
+* URP
+* TextMeshPro
+* Particle System
+* GPU Instancing
+* Static Batching
 
 ---
 
-## 📌 Статус проекта
+# 📌 Статус проекта
 
 Прототип с завершённым игровым циклом и оптимизированной архитектурой.
 
-### 🎮 GameManager.cs
+---
 
-Центральный управляющий скрипт игры
+# 🧠 Основные системы проекта
 
-Отвечает за:
+---
+
+## 🎮 GameManager.cs
+
+Центральный управляющий скрипт игры.
+
+### Отвечает за:
 
 * текущий уровень
 * таймер перехода между уровнями
 * увеличение сложности
-* хранение счёта (уничтоженные метеоры)
-* завершение игры (победа)
+* хранение счёта
+* победу / завершение игры
+* progression loop
 
-### ☄️ Meteor.cs
+---
 
-Поведение метеора
+## ☄️ Meteor.cs
 
-Функции:
+Основной gameplay-скрипт метеоритов.
 
-* движение к игроку (через Rigidbody)
-* обработка столкновения с игроком
-* уничтожение (DestroyMeteor)
-* создание взрыва
-* генерация floating текста (+1)
-* уведомление спавнера об удалении
+### Реализует:
 
-### 🌊 MeteorSpawnerPRO.cs
+* физическое движение
+* Rigidbody physics
+* collision system
+* взаимодействие с игроком
+* уничтожение метеора
+* визуальные эффекты
+* floating text
+* push system от EMP
+* teleportation support
+* damage interaction
 
-* Продвинутая система спавна
+### Features:
 
-Отвечает за:
+* `DestroyMeteor()`
+* `Push()`
+* `OnCollisionEnter()`
+* explosion spawning
+* floating UI
+* spawner notifications
 
-* генерацию волн метеоров
-* выбор паттерна спавна:
-* конус
-* стена
-* стена с отверстием
-* ограничение количества объектов
-* масштабирование сложности по уровню
+---
 
-### 🔫 ShootingSystem.cs
+## 🌊 MeteorSpawnerPRO.cs
 
-* Система стрельбы
+Продвинутая procedural wave system.
 
-Реализует:
+### Отвечает за:
 
-* стрельбу по направлению камеры
-* Raycast + SphereCast (расширенное попадание)
-* фильтрацию по слоям (игнор Player)
-* автоприцел (aim assist)
-* выбор ближайшей цели
+* генерацию волн
+* procedural spawn patterns
+* динамическую сложность
+* ограничение количества meteors
+* wave pacing
+* level scaling
 
-### 🎯 CameraOrbit.cs
+### Spawn Patterns:
 
-Орбитальная камера
+* cone attack
+* meteor wall
+* wall with hole
+* directional spawn logic
 
-Отвечает за:
+### Optimization:
+
+* max meteor cap
+* velocity-based spawning
+* cached player reference
+
+---
+
+## 🔫 ShipCombat.cs
+
+Основная система стрельбы.
+
+### Реализует:
+
+* projectile spawning
+* FirePoint muzzle system
+* projectile targeting
+* target acquisition
+* meteor tracking
+* homing logic
+
+### Исправленные проблемы:
+
+* orbiting projectiles
+* backward shooting
+* circular projectile movement
+* projectile stacking around player
+
+---
+
+## 🚀 Projectile.cs
+
+Поведение projectile.
+
+### Features:
+
+* movement to target
+* target tracking
+* homing trajectory
+* collision detection
+* meteor destruction
+* lifetime control
+
+---
+
+## 🎯 LockOnSystem.cs
+
+Система захвата целей.
+
+### Реализует:
+
+* поиск ближайшего метеора
+* assist radius
+* directional filtering
+* aim assist
+
+### Используется:
+
+* projectile targeting
+* auto-aim
+* combat readability
+
+---
+
+## 🎥 CameraOrbit.cs
+
+Орбитальная камера.
+
+### Отвечает за:
 
 * вращение камеры вокруг корабля
-* управление углами (yaw/pitch)
+* управление yaw/pitch
 * зум
-* фиксацию взгляда на цели (LookAt)
+* LookAt targeting
+* smooth orbiting
 
-### ✨ FloatingText.cs
+---
 
-Анимация всплывающего текста
+## ✨ FloatingText.cs
 
-Функции:
+Floating combat feedback.
+
+### Реализует:
 
 * движение текста вверх
-* плавное исчезновение (fade-out)
-* автоудаление объекта
+* fade-out animation
+* auto destroy
+* UI feedback
 
-### 📊 ScoreUI.cs
+---
 
-* Отображение счёта
+## 📊 ScoreUI.cs
 
-* вывод количества уничтоженных метеоров
-* обновление UI каждый кадр
+Система отображения счёта.
 
-### 📈 LevelUI.cs
+### Features:
 
-Отображение уровня
+* отображение уничтоженных метеоров
+* realtime update
+* UI synchronization
 
-* показывает текущий уровень
-* отображает текстовое описание сложности
+---
 
-### 🌌 SkyboxRotation.cs
+## 📈 LevelUI.cs
 
-Анимация космоса
+Отображение уровня и сложности.
 
-* вращает skybox
-* усиливает эффект движения и глубины сцены
+### Реализует:
 
-### 🎥 CameraShake.cs
+* current level display
+* difficulty text
+* wave progression feedback
 
-Тряска камеры
+---
 
-* вызывается при столкновении
-* усиливает ощущение удара
+## 📖 StoryManager.cs
 
-### 🌀 Portal.cs
+Система narrative / event messaging.
 
-Система телепортации
+### Отвечает за:
 
-* перемещает объекты между порталами
-* предотвращает зацикливание (через флаг isTeleporting)
+* отображение wave messages
+* progression events
+* gameplay notifications
+
+---
+
+## 🌌 SkyboxRotation.cs
+
+Анимация космоса.
+
+### Реализует:
+
+* вращение skybox
+* усиление ощущения движения
+* depth illusion
+
+---
+
+## 🎥 CameraShake.cs
+
+Система тряски камеры.
+
+### Используется:
+
+* при столкновениях
+* при damage events
+* для усиления impact feedback
+
+---
+
+## 🌀 Portal.cs
+
+Телепортационная система.
+
+### Реализует:
+
+* teleport between portals
+* сохранение velocity
+* anti-loop protection
+
+### Использует:
+
+```csharp
+isTeleporting
+```
+
+---
+
+# 🛰 Drone System
+
+---
+
+## 🚁 Drone Support Unit
+
+В игру внедрён drone companion.
+
+### Drone:
+
+* сопровождает корабль
+* имеет собственную модель
+* поддерживает EMP-ability
+* взаимодействует с meteors
+
+---
+
+## ⚡ EMP Ability
+
+### Активация:
+
+```text
+V
+```
+
+### Эффект:
+
+* отталкивает nearby meteors
+* расчищает пространство
+* помогает выживать в плотных wave
+
+---
+
+## Cooldown System
+
+EMP ability:
+
+* имеет cooldown
+* предотвращает spam
+* создаёт tactical timing
+
+---
+
+# 🚀 Thruster VFX
+
+---
+
+## Engine Particles
+
+Добавлены:
+
+* engine flames
+* dual thruster particles
+* sci-fi propulsion effect
+
+### Particle Features:
+
+* looping particles
+* emissive look
+* configurable colors
+
+---
+
+# ☄️ Physics Systems
+
+---
+
+## Rigidbody Meteors
+
+Метеоры:
+
+* используют physics
+* имеют velocity-based movement
+* взаимодействуют через collisions
+
+---
+
+## Collision System
+
+### Реализует:
+
+* столкновения с player
+* camera shake
+* player reset
+* future damage system hooks
+
+---
+
+# ⚙️ Оптимизация
+
+---
+
+## GPU Instancing
+
+Используется для:
+
+* meteors
+* repeated meshes
+* repeated materials
+
+---
+
+## Static Batching
+
+Используется для:
+
+* portals
+* static geometry
+* environmental meshes
+
+---
+
+## Cached References
+
+Уменьшено количество:
+
+```csharp
+Find()
+GetComponent()
+```
+
+---
+
+## Particle Optimization
+
+Оптимизированы:
+
+* particle count
+* trail lifetime
+* VFX cleanup
+
+---
+
+## Meteor Limits
+
+Используется:
+
+```csharp
+maxMeteors
+```
+
+для предотвращения:
+
+* FPS drops
+* scene overload
+* physics overload
+
+---
+
+# 🚫 Удалённые / Переработанные системы
+
+---
+
+## ShootingSystem.cs
+
+Удалён из архитектуры.
+
+### Причины:
+
+* конфликтовал с ShipCombat
+* вызывал circular shooting
+* projectiles летали по орбите
+
+### Заменён на:
+
+```text
+ShipCombat
++
+Projectile targeting system
+```
+
+---
+
+# 🔮 Planned Features
+
+---
+
+## 🛠 Ship Damage System
+
+Планируется:
+
+* hull damage
+* visual damage states
+* dirt rendering
+* repair mechanics
+
+---
+
+## 🌌 Space Dust
+
+Планируется:
+
+* volumetric particles
+* traversal depth
+* cinematic movement
+
+---
+
+## 🤖 Advanced Drone AI
+
+Планируется:
+
+* autonomous combat
+* repair drone
+* shield drone
+* combat assistance
+
+---
+
+## ☄️ Advanced Enemy Waves
+
+Планируется:
+
+* elite meteors
+* boss waves
+* adaptive difficulty
+* dynamic pacing
+
+---
+
+# 🎮 Gameplay Loop
+
+```text
+Spawn Wave
+→ Meteors attack
+→ Player shoots
+→ Drone clears space
+→ Destroy meteors
+→ Survive escalation
+→ Difficulty increases
+→ Next wave
+```
+
+---
+
+# 🎯 Жанр проекта
+
+```text
+Arcade Space Survival
++
+Sci-Fi Wave Defense
++
+3D Action Prototype
+```
+
