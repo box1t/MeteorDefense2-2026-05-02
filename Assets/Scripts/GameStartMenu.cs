@@ -2,14 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using UnityEngine.SceneManagement;
 public class GameStartMenu : MonoBehaviour
 {
     [Header("UI Pages")]
     public GameObject mainMenu;
     public GameObject options;
     public GameObject about;
-
+	
     [Header("Main Menu Buttons")]
     public Button startButton;
     public Button optionButton;
@@ -35,15 +35,19 @@ public class GameStartMenu : MonoBehaviour
         }
     }
 
-    public void QuitGame()
-    {
-        Application.Quit();
-    }
+	public void QuitGame()
+	{
+	#if UNITY_EDITOR
+		UnityEditor.EditorApplication.isPlaying = false;
+	#else
+		Application.Quit();
+	#endif
+	}
 
     public void StartGame()
     {
         HideAll();
-        SceneTransitionManager.singleton.GoToSceneAsync(1);
+        SceneManager.LoadScene("Gameplay");
     }
 
     public void HideAll()
