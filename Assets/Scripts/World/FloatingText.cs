@@ -1,29 +1,56 @@
-using TMPro;
 using UnityEngine;
+using TMPro;
 
 public class FloatingText : MonoBehaviour
 {
-    public float speed = 2f;
-    public float lifetime = 1f;
+    [Header("Movement")]
+    public float moveSpeed = 2f;
 
-    TextMeshProUGUI text;
-    Color color;
+    [Header("Lifetime")]
+    public float lifeTime = 1.5f;
+
+    TextMeshProUGUI textMesh;
+
+    Color startColor;
+
+    float timer;
 
     void Start()
     {
-        text = GetComponent<TextMeshProUGUI>();
-        color = text.color;
+        textMesh =
+            GetComponent<TextMeshProUGUI>();
 
-        Destroy(gameObject, lifetime);
+        startColor = textMesh.color;
     }
 
     void Update()
     {
-        // движение вверх
-        transform.Translate(Vector3.up * speed * Time.deltaTime);
+        timer += Time.deltaTime;
 
-        // плавное исчезновение
-        color.a -= Time.deltaTime / lifetime;
-        text.color = color;
+        // движение вверх
+        transform.position +=
+            Vector3.up *
+            moveSpeed *
+            Time.deltaTime;
+
+        // fade
+        float alpha =
+            Mathf.Lerp(
+                1f,
+                0f,
+                timer / lifeTime
+            );
+
+        Color c = startColor;
+
+        c.a = alpha;
+
+        textMesh.color = c;
+
+        // destroy
+        if (timer >= lifeTime)
+        {
+            Destroy(gameObject);
+        }
     }
 }
